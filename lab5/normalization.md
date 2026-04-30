@@ -7,176 +7,200 @@
 ```text
 clients
 -------------------------
-PK client\_id
-first\_name
-last\_name
-birth\_date
+PK client_id
+first_name
+last_name
+birth_date
 phone UNIQUE
 email UNIQUE
-passport\_number UNIQUE
-created\_date
+passport_number UNIQUE
+created_date
 ```
 
-У цій таблиці кожен клієнт має унікальний ідентифікатор `client\_id`. Також унікальними є номер телефону, email та номер паспорта.
+У цій таблиці кожен клієнт має унікальний ідентифікатор `client_id`. Також унікальними є номер телефону, email та номер паспорта.
+
+
 
 ## Таблиця `accounts`
 
 Таблиця зберігала інформацію про рахунки клієнтів.
 
-У цій таблиці були повторювані значення в полях: `account\_type`, `currency` та `status`.
+У цій таблиці були повторювані значення в полях: `account_type`, `currency` та `status`.
 
 ```text
 accounts
 -------------------------
-PK account\_id
-FK client\_id
-account\_number UNIQUE
-account\_type
+PK account_id
+FK client_id
+account_number UNIQUE
+account_type
 balance
 currency
 status
-opened\_date
+opened_date
 ```
 
-Проблема цієї таблиці полягає в тому, що тип рахунку, валюта та статус зберігалися як текстові значення безпосередньо в таблиці `accounts`. Наприклад, значення: `debit`, `credit`, `savings`, `UAH`, `USD`, `EUR`, `active`, `blocked`  - повторювалися у багатьох рядках.
+Проблема цієї таблиці полягає в тому, що тип рахунку, валюта та статус зберігалися як текстові значення безпосередньо в таблиці `accounts`. Наприклад, значення: `debit`, `credit`, `savings`, `UAH`, `USD`, `EUR`, `active`, `blocked` повторювалися у багатьох рядках.
+
+
 
 ## Таблиця `cards`
 
 Таблиця зберігала інформацію про банківські картки.
 
-У цій таблиці були повторювані значення в полях: `card\_type` та `status`.
+У цій таблиці були повторювані значення в полях: `card_type` та `status`.
 
 ```text
 cards
 -------------------------
-PK card\_id
-FK account\_id
-card\_number UNIQUE
-card\_type
-expiry\_date
+PK card_id
+FK account_id
+card_number UNIQUE
+card_type
+expiry_date
 cvv
 status
 ```
 
-Проблема цієї таблиці полягає в тому, що тип картки та статус картки зберігалися як текстові значення. Наприклад: `Visa`, `MasterCard`, `active`, `expired`, `blocked` могли повторюватися в багатьох рядках.
+Проблема цієї таблиці полягає в тому, що тип картки та статус картки зберігалися як текстові значення. Наприклад, значення `Visa`, `MasterCard`, `active`, `expired`, `blocked` могли повторюватися в багатьох рядках.
+
+
 
 ## Таблиця `transactions`
 
 Таблиця зберігала інформацію про фінансові операції.
 
-У цій таблиці було повторюване значення в полі `transaction\_type`.
+У цій таблиці було повторюване значення в полі `transaction_type`.
 
 ```text
 transactions
 -------------------------
-PK transaction\_id
-FK account\_id
+PK transaction_id
+FK account_id
 amount
-transaction\_type
-transaction\_date
+transaction_type
+transaction_date
 description
 ```
 
 Проблема таблиці полягає в тому, що тип транзакції `debit` або `credit` зберігався безпосередньо у кожному рядку таблиці.
 
+
+
 ## Виявлені проблеми:
 
-У початковій схемі частина значень зберігалася повторно, що могло створити плутанину у достовіності даних.
+У початковій схемі частина значень зберігалася повторно, що могло створити плутанину у достовірності даних.
 
 Повторювані значення:
 
 ```text
-accounts.account\_type
+accounts.account_type
 accounts.currency
 accounts.status
-cards.card\_type
+cards.card_type
 cards.status
-transactions.transaction\_type
+transactions.transaction_type
 ```
 
 Можливі проблеми:
 
-* якщо потрібно змінити назву статусу рахунку, її доведеться змінювати у багатьох рядках;
-* можна випадково записати однакове значення по-різному, наприклад `active` і `Active`;
-* неможливо зручно зберігати перелік допустимих типів або статусів окремо від основних таблиць;
-* порушується принцип, за яким кожен факт повинен зберігатися лише один раз.
+- якщо потрібно змінити назву статусу рахунку, її доведеться змінювати у багатьох рядках;
+- можна випадково записати однакове значення по-різному, наприклад `active` і `Active`;
+- неможливо зручно зберігати перелік допустимих типів або статусів окремо від основних таблиць;
+- порушується принцип, за яким кожен факт повинен зберігатися лише один раз.
 
-Функціональні залежності початкової схеми:
 
----
+
+## Функціональні залежності початкової схеми:
 
 ## Таблиця `clients`
 
 Функціональні залежності:
 
 ```text
-client\_id -> first\_name, last\_name, birth\_date, phone, email, passport\_number, created\_date
-phone -> client\_id
-email -> client\_id
-passport\_number -> client\_id
+client_id -> first_name, last_name, birth_date, phone, email, passport_number, created_date
+phone -> client_id
+email -> client_id
+passport_number -> client_id
 ```
 
-Первинний ключ: `client\_id`.
-Альтернативні унікальні ключі: `phone`, `email`, `passport\_number`.
+Первинний ключ: `client_id`.
+
+Альтернативні унікальні ключі: `phone`, `email`, `passport_number`.
+
+
 
 ## Таблиця `accounts`
 
 Функціональні залежності:
 
 ```text
-account\_id -> client\_id, account\_number, account\_type, balance, currency, status, opened\_date
-account\_number -> account\_id, client\_id, account\_type, balance, currency, status, opened\_date
-account\_type -> allowed account type value
+account_id -> client_id, account_number, account_type, balance, currency, status, opened_date
+account_number -> account_id, client_id, account_type, balance, currency, status, opened_date
+account_type -> allowed account type value
 currency -> currency meaning
 status -> account status meaning
 ```
 
-Первинний ключ: `account\_id`.
-Альтернативний унікальний ключ: `account\_number`.
-Проблемні атрибути: `account\_type`, `currency`, `status`.
+Первинний ключ: `account_id`.
+
+Альтернативний унікальний ключ: `account_number`.
+
+Проблемні атрибути: `account_type`, `currency`, `status`.
+
+
 
 ## Таблиця `cards`
 
 Функціональні залежності:
 
 ```text
-card\_id -> account\_id, card\_number, card\_type, expiry\_date, cvv, status
-card\_number -> card\_id, account\_id, card\_type, expiry\_date, cvv, status
-card\_type -> allowed card type value
+card_id -> account_id, card_number, card_type, expiry_date, cvv, status
+card_number -> card_id, account_id, card_type, expiry_date, cvv, status
+card_type -> allowed card type value
 status -> card status meaning
 ```
 
-Первинний ключ: `card\_id`.
-Альтернативний унікальний ключ: `card\_number`.
-Проблемні атрибути: `card\_type`, `status`.
+Первинний ключ: `card_id`.
+
+Альтернативний унікальний ключ: `card_number`.
+
+Проблемні атрибути: `card_type`, `status`.
+
+
 
 ## Таблиця `transactions`
 
 Функціональні залежності:
 
 ```text
-transaction\_id -> account\_id, amount, transaction\_type, transaction\_date, description
-transaction\_type -> allowed transaction type value
+transaction_id -> account_id, amount, transaction_type, transaction_date, description
+transaction_type -> allowed transaction type value
 ```
 
-Первинний ключ: `transaction\_id`.
-Проблемний атрибут: `transaction\_type`.
+Первинний ключ: `transaction_id`.
 
-Аналіз нормальних форм:
+Проблемний атрибут: `transaction_type`.
 
----
+
+
+## Аналіз нормальних форм:
 
 ## 1НФ
 
 Початкова схема відповідає 1НФ, оскільки всі атрибути є атомарними. У таблицях немає полів, які містять списки значень або повторювані групи в одному стовпці.
 
-Наприклад, `phone`, `email`, `account\\\_number`, `account\\\_type`, `currency`, `status` зберігаються як окремі значення.
+Наприклад, `phone`, `email`, `account_number`, `account_type`, `currency`, `status` зберігаються як окремі значення.
+
+
 
 ## 2НФ
 
 Початкова схема відповідає 2НФ, оскільки всі основні таблиці мають прості первинні ключі, а не складені. Через це немає часткових залежностей від частини складеного ключа.
 
-Наприклад, у таблиці `accounts` первинним ключем є один атрибут `account\\\_id`, тому всі інші атрибути залежать від усього ключа.
+Наприклад, у таблиці `accounts` первинним ключем є один атрибут `account_id`, тому всі інші атрибути залежать від усього ключа.
+
+
 
 ## 3НФ
 
@@ -184,22 +208,22 @@ transaction\_type -> allowed transaction type value
 
 Для приведення схеми до 3НФ я створив довідникові таблиці, а в основних таблицях замість текстових значень використані зовнішні ключі.
 
-## Нормалізація таблиць:
 
-## 
+
+## Нормалізація таблиць:
 
 ## `accounts`
 
 Початковий дизайн:
 
 ```text
-accounts(account\\\_id, client\\\_id, account\\\_number, account\\\_type, balance, currency, status, opened\\\_date)
+accounts(account_id, client_id, account_number, account_type, balance, currency, status, opened_date)
 ```
 
 Проблема:
 
 ```text
-account\\\_type, currency, status
+account_type, currency, status
 ```
 
 Ці атрибути містили повторювані значення.
@@ -207,31 +231,31 @@ account\\\_type, currency, status
 Запропоновані нові таблиці:
 
 ```text
-account\\\_types(account\\\_type\\\_id, type\\\_name)
-account\\\_statuses(account\\\_status\\\_id, status\\\_name)
-currencies(currency\\\_code, currency\\\_name)
+account_types(account_type_id, type_name)
+account_statuses(account_status_id, status_name)
+currencies(currency_code, currency_name)
 ```
 
 Нова таблиця `accounts`:
 
 ```text
-accounts(account\\\_id, client\\\_id, account\\\_number, account\\\_type\\\_id, balance, currency\\\_code, account\\\_status\\\_id, opened\\\_date)
+accounts(account_id, client_id, account_number, account_type_id, balance, currency_code, account_status_id, opened_date)
 ```
 
 Логічні команди зміни структури:
 
 ```sql
 ALTER TABLE accounts
-    ADD COLUMN account\\\_type\\\_id INTEGER;
+    ADD COLUMN account_type_id INTEGER;
 
 ALTER TABLE accounts
-    ADD COLUMN account\\\_status\\\_id INTEGER;
+    ADD COLUMN account_status_id INTEGER;
 
 ALTER TABLE accounts
-    ADD COLUMN currency\\\_code CHAR(3);
+    ADD COLUMN currency_code CHAR(3);
 
 ALTER TABLE accounts
-    DROP COLUMN account\\\_type;
+    DROP COLUMN account_type;
 
 ALTER TABLE accounts
     DROP COLUMN status;
@@ -242,18 +266,20 @@ ALTER TABLE accounts
 
 Зміна усуває аномалію, тому що типи рахунків, статуси та валюти тепер зберігаються один раз у довідникових таблицях, а таблиця `accounts` лише посилається на них через зовнішні ключі.
 
+
+
 ## `cards`
 
 Початковий дизайн:
 
 ```text
-cards(card\\\_id, account\\\_id, card\\\_number, card\\\_type, expiry\\\_date, cvv, status)
+cards(card_id, account_id, card_number, card_type, expiry_date, cvv, status)
 ```
 
 Проблема:
 
 ```text
-card\\\_type, status
+card_type, status
 ```
 
 Ці атрибути містили повторювані значення.
@@ -261,27 +287,27 @@ card\\\_type, status
 Запропоновані нові таблиці:
 
 ```text
-card\\\_types(card\\\_type\\\_id, type\\\_name)
-card\\\_statuses(card\\\_status\\\_id, status\\\_name)
+card_types(card_type_id, type_name)
+card_statuses(card_status_id, status_name)
 ```
 
 Нова таблиця `cards`:
 
 ```text
-cards(card\\\_id, account\\\_id, card\\\_number, card\\\_type\\\_id, expiry\\\_date, cvv, card\\\_status\\\_id)
+cards(card_id, account_id, card_number, card_type_id, expiry_date, cvv, card_status_id)
 ```
 
 Логічні команди зміни структури:
 
 ```sql
 ALTER TABLE cards
-    ADD COLUMN card\\\_type\\\_id INTEGER;
+    ADD COLUMN card_type_id INTEGER;
 
 ALTER TABLE cards
-    ADD COLUMN card\\\_status\\\_id INTEGER;
+    ADD COLUMN card_status_id INTEGER;
 
 ALTER TABLE cards
-    DROP COLUMN card\\\_type;
+    DROP COLUMN card_type;
 
 ALTER TABLE cards
     DROP COLUMN status;
@@ -289,18 +315,20 @@ ALTER TABLE cards
 
 Зміна усуває дублювання, тому що типи та статуси карток зберігаються в окремих таблицях.
 
+
+
 ## `transactions`
 
 Початковий дизайн:
 
 ```text
-transactions(transaction\\\_id, account\\\_id, amount, transaction\\\_type, transaction\\\_date, description)
+transactions(transaction_id, account_id, amount, transaction_type, transaction_date, description)
 ```
 
 Проблема:
 
 ```text
-transaction\\\_type
+transaction_type
 ```
 
 Цей атрибут містив повторювані значення.
@@ -308,26 +336,28 @@ transaction\\\_type
 Запропонована нова таблиця:
 
 ```text
-transaction\\\_types(transaction\\\_type\\\_id, type\\\_name)
+transaction_types(transaction_type_id, type_name)
 ```
 
 Нова таблиця `transactions`:
 
 ```text
-transactions(transaction\\\_id, account\\\_id, amount, transaction\\\_type\\\_id, transaction\\\_date, description)
+transactions(transaction_id, account_id, amount, transaction_type_id, transaction_date, description)
 ```
 
 Логічні команди зміни структури:
 
 ```sql
 ALTER TABLE transactions
-    ADD COLUMN transaction\\\_type\\\_id INTEGER;
+    ADD COLUMN transaction_type_id INTEGER;
 
 ALTER TABLE transactions
-    DROP COLUMN transaction\\\_type;
+    DROP COLUMN transaction_type;
 ```
 
-Зміна усуває дублювання, тому що тип транзакції тепер зберігається в окремій таблиці `transaction\\\_types`.
+Зміна усуває дублювання, тому що тип транзакції тепер зберігається в окремій таблиці `transaction_types`.
+
+
 
 ## Перероблена схема бази даних
 
@@ -345,150 +375,152 @@ transactions
 Довідникові таблиці:
 
 ```text
-account\\\_types
-account\\\_statuses
+account_types
+account_statuses
 currencies
-card\\\_types
-card\\\_statuses
-transaction\\\_types
+card_types
+card_statuses
+transaction_types
 ```
 
-SQL-реалізація нормалізованої схеми:
 
----
+
+## SQL-реалізація нормалізованої схеми:
 
 Перероблена схема реалізована за допомогою окремих SQL-файлів у папці `scripts`.
 
 ```text
-scripts/create\\\_schema.sql
-scripts/lookup\\\_tables.sql
-scripts/main\\\_tables.sql
-scripts/insert\\\_data.sql
-scripts/check\\\_schema.sql
+scripts/create_schema.sql
+scripts/lookup_tables.sql
+scripts/main_tables.sql
+scripts/insert_data.sql
+scripts/check_schema.sql
 ```
 
-Файл `create\\\_schema.sql` створює схему `lab5`.
+Файл `create_schema.sql` створює схему `lab5`.
 
-Файл `lookup\\\_tables.sql` містить SQL-інструкції `CREATE TABLE` для довідникових таблиць:
+Файл `lookup_tables.sql` містить SQL-інструкції `CREATE TABLE` для довідникових таблиць:
 
 ```text
-account\\\_types(account\\\_type\\\_id, type\\\_name)
-account\\\_statuses(account\\\_status\\\_id, status\\\_name)
-currencies(currency\\\_code, currency\\\_name)
-card\\\_types(card\\\_type\\\_id, type\\\_name)
-card\\\_statuses(card\\\_status\\\_id, status\\\_name)
-transaction\\\_types(transaction\\\_type\\\_id, type\\\_name)
+account_types(account_type_id, type_name)
+account_statuses(account_status_id, status_name)
+currencies(currency_code, currency_name)
+card_types(card_type_id, type_name)
+card_statuses(card_status_id, status_name)
+transaction_types(transaction_type_id, type_name)
 ```
 
-Файл `main\\\_tables.sql` містить SQL-інструкції `CREATE TABLE` для основних таблиць:
+Файл `main_tables.sql` містить SQL-інструкції `CREATE TABLE` для основних таблиць:
 
 ```text
-clients(client\\\_id, first\\\_name, last\\\_name, birth\\\_date, phone, email, passport\\\_number, created\\\_date)
-accounts(account\\\_id, client\\\_id, account\\\_number, account\\\_type\\\_id, balance, currency\\\_code, account\\\_status\\\_id, opened\\\_date)
-cards(card\\\_id, account\\\_id, card\\\_number, card\\\_type\\\_id, expiry\\\_date, cvv, card\\\_status\\\_id)
-transactions(transaction\\\_id, account\\\_id, amount, transaction\\\_type\\\_id, transaction\\\_date, description)
+clients(client_id, first_name, last_name, birth_date, phone, email, passport_number, created_date)
+accounts(account_id, client_id, account_number, account_type_id, balance, currency_code, account_status_id, opened_date)
+cards(card_id, account_id, card_number, card_type_id, expiry_date, cvv, card_status_id)
+transactions(transaction_id, account_id, amount, transaction_type_id, transaction_date, description)
 ```
 
-Файл `insert\\\_data.sql` заповнює довідникові та основні таблиці тестовими даними.
+Файл `insert_data.sql` заповнює довідникові та основні таблиці тестовими даними.
 
-Файл `check\\\_schema.sql` перевіряє роботу нормалізованої схеми через `SELECT`-запити з `JOIN`.
+Файл `check_schema.sql` перевіряє роботу нормалізованої схеми через `SELECT`-запити з `JOIN`.
 
-Повний SQL-код з командами `CREATE TABLE`, первинними ключами, зовнішніми ключами та обмеженнями знаходиться в окремих файлах папки `scripts`. 
+Повний SQL-код з командами `CREATE TABLE`, первинними ключами, зовнішніми ключами та обмеженнями знаходиться в окремих файлах папки `scripts`.
 
-Структура таблиць у 3НФ:
 
----
+
+## Структура таблиць у 3НФ:
 
 ## `clients`
 
 ```text
-PK client\\\_id
-first\\\_name
-last\\\_name
-birth\\\_date
+PK client_id
+first_name
+last_name
+birth_date
 phone UNIQUE
 email UNIQUE
-passport\\\_number UNIQUE
-created\\\_date
+passport_number UNIQUE
+created_date
 ```
 
 ## `accounts`
 
 ```text
-PK account\\\_id
-FK client\\\_id
-account\\\_number UNIQUE
-FK account\\\_type\\\_id
+PK account_id
+FK client_id
+account_number UNIQUE
+FK account_type_id
 balance
-FK currency\\\_code
-FK account\\\_status\\\_id
-opened\\\_date
+FK currency_code
+FK account_status_id
+opened_date
 ```
 
 ## `cards`
 
 ```text
-PK card\\\_id
-FK account\\\_id
-card\\\_number UNIQUE
-FK card\\\_type\\\_id
-expiry\\\_date
+PK card_id
+FK account_id
+card_number UNIQUE
+FK card_type_id
+expiry_date
 cvv
-FK card\\\_status\\\_id
+FK card_status_id
 ```
 
 ## `transactions`
 
 ```text
-PK transaction\\\_id
-FK account\\\_id
+PK transaction_id
+FK account_id
 amount
-FK transaction\\\_type\\\_id
-transaction\\\_date
+FK transaction_type_id
+transaction_date
 description
 ```
 
-## `account\\\_types`
+## `account_types`
 
 ```text
-PK account\\\_type\\\_id
-type\\\_name UNIQUE
+PK account_type_id
+type_name UNIQUE
 ```
 
-## `account\\\_statuses`
+## `account_statuses`
 
 ```text
-PK account\\\_status\\\_id
-status\\\_name UNIQUE
+PK account_status_id
+status_name UNIQUE
 ```
 
 ## `currencies`
 
 ```text
-PK currency\\\_code
-currency\\\_name UNIQUE
+PK currency_code
+currency_name UNIQUE
 ```
 
-## `card\\\_types`
+## `card_types`
 
 ```text
-PK card\\\_type\\\_id
-type\\\_name UNIQUE
+PK card_type_id
+type_name UNIQUE
 ```
 
-## `card\\\_statuses`
+## `card_statuses`
 
 ```text
-PK card\\\_status\\\_id
-status\\\_name UNIQUE
+PK card_status_id
+status_name UNIQUE
 ```
 
-## `transaction\\\_types`
+## `transaction_types`
 
 ```text
-PK transaction\\\_type\\\_id
-type\\\_name UNIQUE
+PK transaction_type_id
+type_name UNIQUE
 ```
+
+
 
 ## ER-діаграма
 
@@ -496,44 +528,58 @@ type\\\_name UNIQUE
 visual/ERdiagram.jpg
 ```
 
-!\[Normalized ERD](visual/ERdiagram.jpg)
+![Normalized ERD](visual/ERdiagram.jpg)
 
-На діаграмі показано всі основні та довідникові таблиці, а також зв’язки між ними:
+На діаграмі показано всі основні та довідникові таблиці, а також зв’язки між ними.
 
-## 
 
-1. `clients.client\\\_id` → `accounts.client\\\_id`
 
-   * один клієнт може мати багато рахунків;
-2. `accounts.account\\\_id` → `cards.account\\\_id`
+## Зв’язки між таблицями:
 
-   * один рахунок може мати багато карток;
-3. `accounts.account\\\_id` → `transactions.account\\\_id`
+1. `clients.client_id` → `accounts.client_id`
 
-   * один рахунок може мати багато транзакцій;
-4. `account\\\_types.account\\\_type\\\_id` → `accounts.account\\\_type\\\_id`
+   - один клієнт може мати багато рахунків;
 
-   * один тип рахунку може використовуватися в багатьох рахунках;
-5. `account\\\_statuses.account\\\_status\\\_id` → `accounts.account\\\_status\\\_id`
+2. `accounts.account_id` → `cards.account_id`
 
-   * один статус рахунку може використовуватися в багатьох рахунках;
-6. `currencies.currency\\\_code` → `accounts.currency\\\_code`
+   - один рахунок може мати багато карток;
 
-   * одна валюта може використовуватися в багатьох рахунках;
-7. `card\\\_types.card\\\_type\\\_id` → `cards.card\\\_type\\\_id`
+3. `accounts.account_id` → `transactions.account_id`
 
-   * один тип картки може використовуватися в багатьох картках;
-8. `card\\\_statuses.card\\\_status\\\_id` → `cards.card\\\_status\\\_id`
+   - один рахунок може мати багато транзакцій;
 
-   * один статус картки може використовуватися в багатьох картках;
-9. `transaction\\\_types.transaction\\\_type\\\_id` → `transactions.transaction\\\_type\\\_id`
+4. `account_types.account_type_id` → `accounts.account_type_id`
 
-   * один тип транзакції може використовуватися в багатьох транзакціях.
+   - один тип рахунку може використовуватися в багатьох рахунках;
+
+5. `account_statuses.account_status_id` → `accounts.account_status_id`
+
+   - один статус рахунку може використовуватися в багатьох рахунках;
+
+6. `currencies.currency_code` → `accounts.currency_code`
+
+   - одна валюта може використовуватися в багатьох рахунках;
+
+7. `card_types.card_type_id` → `cards.card_type_id`
+
+   - один тип картки може використовуватися в багатьох картках;
+
+8. `card_statuses.card_status_id` → `cards.card_status_id`
+
+   - один статус картки може використовуватися в багатьох картках;
+
+9. `transaction_types.transaction_type_id` → `transactions.transaction_type_id`
+
+   - один тип транзакції може використовуватися в багатьох транзакціях.
+
+
 
 ## Висновок:
 
-Під час виконання лабораторної роботи ми проаналізував початкову схему банківської бази даних та виявили повторювані текстові значення в таблицях, а для усунення надлишковості були створені окремі довідникові таблиці. Після нормалізації основні таблиці більше не зберігають повторювані текстові значення, а використовують зовнішні ключі на довідникові таблиці. Це зменшує дублювання, покращує цілісність даних і знижує ризик аномалій оновлення.
+Під час виконання лабораторної роботи я проаналізував початкову схему банківської бази даних та виявив повторювані текстові значення в таблицях `accounts`, `cards` і `transactions`.
+
+Для усунення надлишковості були створені окремі довідникові таблиці: `account_types`, `account_statuses`, `currencies`, `card_types`, `card_statuses` та `transaction_types`.
+
+Після нормалізації основні таблиці більше не зберігають повторювані текстові значення, а використовують зовнішні ключі на довідникові таблиці. Це зменшує дублювання, покращує цілісність даних і знижує ризик аномалій оновлення.
+
 Фінальна схема відповідає третій нормальній формі, оскільки всі неключові атрибути залежать від ключів своїх таблиць, а довідникові значення винесені в окремі таблиці.
-
-
-
